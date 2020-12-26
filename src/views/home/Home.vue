@@ -22,6 +22,7 @@
                 class="tab-control"
                 :titles="['流行','新款','精选']"
                 @tabControlClick="tabControlClick"
+                ref="tabcontrol"
             ></tab-control>
             <!--商品展示模块-->
             <goods-list :goods="showGoods"></goods-list>
@@ -44,12 +45,11 @@
     import RecommendView from "./childComponents/RecommendView";
     import FeatureView from "./childComponents/FeatureView";
 
-
-
     import {
         getHomeData,
         getHomeGoods
     } from "network/home";
+    import {debounce} from "common/common";
 
     export default {
         name: "Home",
@@ -89,6 +89,18 @@
             this.getHomeGoods('pop');
             this.getHomeGoods('new');
             this.getHomeGoods('sell');
+        },
+        mounted() {
+            let refresh = debounce(this.$refs.scroll.refreshScroll,50);
+            //接收并监听事件总线中的每个图片加载完成事件
+            this.$bus.$on("emitLoadImg",() => {
+                refresh();
+            });
+
+            //获取tabControl的offsetTop偏移量位置
+            //所有的组件都有一个属性“$el”:用于获取组件中的元素
+            console.log(this.$refs.tabcontrol.$el.offsetTop);
+
         },
         methods:{
             /**
@@ -154,12 +166,12 @@
         z-index:10;
     }
 
-    .tab-control{
-        /*这个属性特性：查看day07-项目笔记*/
+    /*.tab-control{
+        !*这个属性特性：查看day07-项目笔记*!
         position: sticky;
         top:44px;
         z-index:8;
-    }
+    }*/
 
     .home-scroll{
         position: absolute;

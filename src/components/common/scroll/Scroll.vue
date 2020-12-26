@@ -35,13 +35,20 @@
                     pullUpLoad:this.pullUpLoad,  //允许上拉加载更多事件的触发
                 });
 
-                this.scroll.on("scroll",(pos) => {
-                    this.$emit("scroll",pos);
-                });
+                if(this.probeType === 2 || this.probeType === 3){
+                    //监听滚动位置
+                    this.scroll.on("scroll",(pos) => {
+                        this.$emit("scroll",pos);
+                    });
+                }
 
-                this.scroll.on("pullingUp",() => {
-                    this.$emit("pullingUp");
-                });
+                if(this.pullUpLoad){
+                    //监听上拉加载更多
+                    this.scroll.on("pullingUp",() => {
+                        this.$emit("pullingUp");
+                    });
+                }
+
             })
         },
         methods:{
@@ -50,6 +57,9 @@
             },
             finishPullUp(){
                 this.scroll.finishPullUp();
+            },
+            refreshScroll(){
+                this.scroll && this.scroll.refresh();
             }
         }
     }
