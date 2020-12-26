@@ -26,6 +26,5 @@
 
     .center{
         flex:1;
-        color:#fff;
     }
 </style>

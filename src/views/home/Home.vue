@@ -2,17 +2,25 @@
     <div id="home">
         <!--navbar模块-->
         <nav-bar class="home-nav"><div slot="center">购物车</div></nav-bar>
+        <!--tabControl模块-->
+        <tab-control
+            class="tab-control-01"
+            :titles="['流行','新款','精选']"
+            @tabControlClick="tabControlClick"
+            ref="tabcontrol1"
+            v-show="isSwiperShow"
+        ></tab-control>
         <!--页面区域滚动模块-->
         <scroll-view
             class="home-scroll"
             ref="scroll"
-            :probe-type="0"
+            :probe-type="3"
             :pull-up-load="true"
             @scroll="contentScroll"
             @pullingUp="loadMore"
         >
             <!--轮播图模块-->
-            <home-swiper :banners="banners"></home-swiper>
+            <home-swiper :banners="banners" @loadSwiperIMg="loadSwiperIMg"></home-swiper>
             <!--推荐信息模块-->
             <recommend-view :recommends="recommends"></recommend-view>
             <!--feature模块-->
@@ -22,7 +30,8 @@
                 class="tab-control"
                 :titles="['流行','新款','精选']"
                 @tabControlClick="tabControlClick"
-                ref="tabcontrol"
+                ref="tabcontrol2"
+                :class="{isSwriperFixed:isSwiperShow}"
             ></tab-control>
             <!--商品展示模块-->
             <goods-list :goods="showGoods"></goods-list>
@@ -78,7 +87,10 @@
                     'sell':{page:0,list:[]},
                 },
                 currentType:'pop',
-                isShowBackTop:false
+                isShowBackTop:false,
+                isSwiperShow:false,
+                currentSwiperOffset:0,
+                saveY:0
             }
         },
         created() {
@@ -96,11 +108,15 @@
             this.$bus.$on("emitLoadImg",() => {
                 refresh();
             });
-
-            //获取tabControl的offsetTop偏移量位置
-            //所有的组件都有一个属性“$el”:用于获取组件中的元素
-            console.log(this.$refs.tabcontrol.$el.offsetTop);
-
+        },
+        activated() {
+            this.$nextTick(() => {
+                this.$refs.scroll.refreshScroll();
+                this.$refs.scroll.backTop(0,this.saveY,0);
+            })
+        },
+        deactivated() {
+            this.saveY = this.$refs.scroll.getScrollY();
         },
         methods:{
             /**
@@ -118,17 +134,27 @@
                         this.currentType = 'sell';
                         break;
                 }
+                this.$refs.tabcontrol1.currentIndex = index;
+                this.$refs.tabcontrol2.currentIndex = index;
             },
             backTopClick(){
                 this.$refs.scroll.backTop(0,0,700);
             },
             contentScroll(pos){
+                //1.点击返回顶部按钮的显示和隐藏
                 this.isShowBackTop = (-pos.y) > 1000;
+
+                //2.tabControl模块的显示和隐藏["流行","新款","精选"]
+                this.isSwiperShow = (-pos.y) > this.currentSwiperOffset;
             },
             loadMore(){
                 this.getHomeGoods(this.currentType);
             },
-
+            loadSwiperIMg(){
+                //获取tabControl的offsetTop偏移量位置
+                //所有的组件都有一个属性“$el”:用于获取组件中的元素
+                this.currentSwiperOffset = this.$refs.tabcontrol2.$el.offsetTop;
+            },
             /**
              * 网络请求相关方法
              */
@@ -152,17 +178,15 @@
 
 <style scoped>
     #home{
-        padding-top:44px;
+        /*padding-top:44px;*/
         height:100vh;
         position:relative;
     }
 
     .home-nav{
         background:var(--color-tint);
-        position:fixed;
-        top:0;
-        left:0;
-        right:0;
+        color:#fff;
+        position:relative;
         z-index:10;
     }
 
@@ -179,5 +203,10 @@
         left:0;
         top:44px;
         bottom:49px;
+    }
+
+    .tab-control-01{
+        position:relative;
+        z-index:10;
     }
 </style>

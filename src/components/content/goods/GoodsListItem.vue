@@ -1,5 +1,5 @@
 <template>
-    <div class="goods-list-item">
+    <div class="goods-list-item" @click="itemClick(item)">
         <img :src="item.show.img" alt="" @load="loadImg">
         <div class="goods-item-content">
             <p>{{item.title}}</p>
@@ -23,6 +23,9 @@
         methods:{
             loadImg(){
                 this.$bus.$emit("emitLoadImg",);
+            },
+            itemClick(item){
+                this.$router.push("/detail/"+item.iid);
             }
         }
     }
